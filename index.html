@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Wins</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --primary-dark: #4f46e5;
+      --primary-bg: #eef2ff;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --radius: 16px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #root { min-height: 100vh; }
+
+    .app {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+    }
+
+    /* ── Header ── */
+    .header {
+      background: var(--card);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow);
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.4px;
+    }
+
+    .lang-toggle {
+      display: flex;
+      gap: 2px;
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 3px;
+    }
+
+    .lang-btn {
+      padding: 4px 7px;
+      border: none;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s;
+      color: var(--text-muted);
+      background: transparent;
+      font-family: inherit;
+      letter-spacing: 0.3px;
+    }
+
+    .lang-btn.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* ── Main ── */
+    .main {
+      flex: 1;
+      padding: 16px 16px 100px;
+      overflow-y: auto;
+    }
+
+    /* ── Bottom Nav ── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 8px 12px 22px;
+      z-index: 100;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+    }
+
+    .nav-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 6px 18px;
+      border: none;
+      background: transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.18s;
+      color: var(--text-muted);
+      font-family: inherit;
+    }
+
+    .nav-tab.active {
+      color: var(--primary);
+      background: var(--primary-bg);
+    }
+
+    .nav-tab svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .nav-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .nav-fab {
+      width: 54px;
+      height: 54px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(99,102,241,0.45);
+      transition: transform 0.15s, box-shadow 0.15s;
+      flex-shrink: 0;
+    }
+
+    .nav-fab:active { transform: scale(0.93); box-shadow: 0 2px 8px rgba(99,102,241,0.35); }
+
+    .nav-fab svg {
+      width: 26px;
+      height: 26px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+    }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin: 18px 0 10px;
+    }
+
+    /* ── Progress Card ── */
+    .progress-card {
+      background: linear-gradient(135deg, var(--primary) 0%, #818cf8 100%);
+      border-radius: var(--radius);
+      padding: 22px;
+      color: #fff;
+      margin-bottom: 14px;
+    }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 18px;
+    }
+
+    .progress-label {
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0.85;
+      margin-bottom: 4px;
+    }
+
+    .progress-pct {
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .progress-sub {
+      font-size: 12px;
+      opacity: 0.72;
+      margin-top: 3px;
+    }
+
+    .progress-emoji { font-size: 36px; }
+
+    .progress-track {
+      background: rgba(255,255,255,0.28);
+      border-radius: 999px;
+      height: 9px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #fff;
+      border-radius: 999px;
+      transition: width 0.5s cubic-bezier(.4,0,.2,1);
+      min-width: 4px;
+    }
+
+    /* ── Stats Grid ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-icon { font-size: 22px; margin-bottom: 8px; }
+
+    .stat-val {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .stat-lbl {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    /* ── Quick habit row (dashboard) ── */
+    .quick-row {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .quick-row.done { background: #f0fdf4; }
+
+    .quick-check {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.18s;
+      font-size: 14px;
+    }
+
+    .quick-check.done {
+      background: var(--success);
+      border-color: var(--success);
+    }
+
+    .quick-name {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .quick-name.done {
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .quick-streak {
+      font-size: 12px;
+      font-weight: 700;
+      color: #f97316;
+    }
+
+    /* ── Habit Card ── */
+    .habit-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow);
+      border: 1.5px solid transparent;
+      transition: border-color 0.18s, background 0.18s;
+    }
+
+    .habit-card.done {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+    }
+
+    .habit-card-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .check-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 2.5px solid var(--border);
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.18s;
+    }
+
+    .check-btn.done {
+      background: var(--success);
+      border-color: var(--success);
+    }
+
+    .check-btn svg {
+      width: 14px;
+      height: 14px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .check-btn.done svg { opacity: 1; }
+
+    .habit-info { flex: 1; min-width: 0; }
+
+    .habit-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .habit-name.done {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .habit-meta {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 4px;
+    }
+
+    .cat-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .cat-Fitness     { background: #d1fae5; color: #065f46; }
+    .cat-Mindfulness { background: #ede9fe; color: #5b21b6; }
+    .cat-Learning    { background: #dbeafe; color: #1e40af; }
+    .cat-Productivity{ background: #fef3c7; color: #92400e; }
+
+    .habit-actions {
+      display: flex;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      color: var(--text-muted);
+    }
+
+    .icon-btn:hover { background: var(--bg); }
+    .icon-btn.del:hover { background: #fee2e2; color: #ef4444; }
+
+    .icon-btn svg {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* 7-day dots */
+    .week-dots {
+      display: flex;
+      gap: 4px;
+      margin-top: 10px;
+    }
+
+    .dot-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .dot {
+      width: 22px;
+      height: 7px;
+      border-radius: 3px;
+      background: var(--border);
+      transition: background 0.2s;
+    }
+
+    .dot.filled { background: var(--primary); }
+    .dot.today-filled { background: var(--success); }
+
+    .dot-day {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    /* Streak badges */
+    .streak-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .streak-pill {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: var(--bg);
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+
+    .streak-pill.hot { color: #f97316; background: #fff7ed; }
+
+    /* ── Empty State ── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 56px 24px;
+      text-align: center;
+    }
+
+    .empty-icon { font-size: 72px; margin-bottom: 20px; }
+
+    .empty-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .empty-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 28px;
+      max-width: 280px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: #fff;
+      border: none;
+      border-radius: 13px;
+      padding: 13px 26px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 4px 12px rgba(99,102,241,0.35);
+      transition: opacity 0.15s;
+    }
+
+    .btn-primary:hover { opacity: 0.9; }
+
+    /* ── View header ── */
+    .view-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .view-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+
+    .badge-pill {
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--card);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 4px 12px;
+      border-radius: 999px;
+    }
+
+    /* ── All Done Banner ── */
+    .all-done-banner {
+      background: linear-gradient(135deg, #10b981, #34d399);
+      color: #fff;
+      border-radius: 13px;
+      padding: 13px 16px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: 0.1px;
+    }
+
+    /* ── Modal ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 200;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .sheet {
+      background: var(--card);
+      width: 100%;
+      max-width: 480px;
+      border-radius: 20px 20px 0 0;
+      padding: 20px 20px 44px;
+      animation: rise 0.26s cubic-bezier(.4,0,.2,1);
+    }
+
+    @keyframes rise {
+      from { transform: translateY(100%); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    .sheet-handle {
+      width: 38px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 0 auto 20px;
+    }
+
+    .sheet-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 22px;
+      color: var(--text);
+    }
+
+    .form-group { margin-bottom: 18px; }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 7px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 11px;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.18s;
+    }
+
+    .form-input:focus { border-color: var(--primary); }
+
+    .cat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .cat-option {
+      padding: 11px;
+      border-radius: 11px;
+      border: 2px solid var(--border);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--text-muted);
+    }
+
+    .cat-option.sel {
+      border-color: var(--primary);
+      background: var(--primary-bg);
+      color: var(--primary);
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 26px;
+    }
+
+    .btn-cancel {
+      flex: 1;
+      padding: 13px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .btn-save {
+      flex: 2;
+      padding: 13px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 3px 10px rgba(99,102,241,0.3);
+    }
+
+    .btn-save:disabled { opacity: 0.5; cursor: default; box-shadow: none; }
+
+    /* ── Toast ── */
+    .toast-container {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 32px);
+      max-width: 448px;
+      z-index: 300;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      background: #1e1b4b;
+      color: #fff;
+      border-radius: 13px;
+      padding: 13px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.5;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+      animation: toast-in 0.28s cubic-bezier(.4,0,.2,1);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      pointer-events: all;
+    }
+
+    .toast-icon { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+
+    .toast-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    @keyframes toast-in {
+      from { transform: translateY(14px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+/* ── Translations ── */
+const T = {
+  en: {
+    appName:'Daily Wins', dashboard:'Dashboard', habits:'Habits',
+    addHabit:'Add Habit', editHabit:'Edit Habit',
+    todayProgress:"Today's Progress", of:'of', habits2:'habits',
+    totalHabits:'Total Habits', completed:'Completed Today',
+    longestStreak:'Longest Streak', currentStreak:'Best Streak',
+    noHabits:'No habits yet', addYourFirst:'Add Your First Habit',
+    noHabitsDesc:'Add your first habit to start tracking your daily wins!',
+    habitName:'Habit Name', placeholder:'e.g. Morning run, Meditate…',
+    category:'Category', save:'Save Habit', cancel:'Cancel',
+    edit:'Edit', delete:'Delete', allDone:'All habits done today!',
+    Fitness:'Fitness', Mindfulness:'Mindfulness',
+    Learning:'Learning', Productivity:'Productivity',
+    streak:'streak', best:'best', days:'days',
+    Mon:'M',Tue:'T',Wed:'W',Thu:'T',Fri:'F',Sat:'S',Sun:'S',
+  },
+  es: {
+    appName:'Daily Wins', dashboard:'Panel', habits:'Hábitos',
+    addHabit:'Agregar Hábito', editHabit:'Editar Hábito',
+    todayProgress:'Progreso de Hoy', of:'de', habits2:'hábitos',
+    totalHabits:'Total Hábitos', completed:'Completados Hoy',
+    longestStreak:'Racha Más Larga', currentStreak:'Mejor Racha',
+    noHabits:'Sin hábitos aún', addYourFirst:'Agrega Tu Primer Hábito',
+    noHabitsDesc:'¡Agrega tu primer hábito para rastrear tus victorias diarias!',
+    habitName:'Nombre del Hábito', placeholder:'ej. Correr, Meditar…',
+    category:'Categoría', save:'Guardar Hábito', cancel:'Cancelar',
+    edit:'Editar', delete:'Eliminar', allDone:'¡Todos los hábitos completados!',
+    Fitness:'Fitness', Mindfulness:'Mindfulness',
+    Learning:'Aprendizaje', Productivity:'Productividad',
+    streak:'racha', best:'mejor', days:'días',
+    Mon:'L',Tue:'M',Wed:'X',Thu:'J',Fri:'V',Sat:'S',Sun:'D',
+  },
+  fr: {
+    appName:'Daily Wins', dashboard:'Tableau de bord', habits:'Habitudes',
+    addHabit:'Ajouter', editHabit:'Modifier',
+    todayProgress:"Progrès d'aujourd'hui", of:'sur', habits2:'habitudes',
+    totalHabits:'Total habitudes', completed:'Complétés aujourd\'hui',
+    longestStreak:'Plus longue série', currentStreak:'Meilleure série',
+    noHabits:"Pas encore d'habitudes", addYourFirst:'Ajouter ma première habitude',
+    noHabitsDesc:"Ajoutez votre première habitude pour suivre vos victoires quotidiennes!",
+    habitName:"Nom de l'habitude", placeholder:'ex. Courir, Méditer…',
+    category:'Catégorie', save:'Enregistrer', cancel:'Annuler',
+    edit:'Modifier', delete:'Supprimer', allDone:'Toutes les habitudes terminées!',
+    Fitness:'Forme physique', Mindfulness:'Pleine conscience',
+    Learning:'Apprentissage', Productivity:'Productivité',
+    streak:'série', best:'meilleur', days:'jours',
+    Mon:'L',Tue:'M',Wed:'M',Thu:'J',Fri:'V',Sat:'S',Sun:'D',
+  },
+  ja: {
+    appName:'Daily Wins', dashboard:'ダッシュボード', habits:'習慣',
+    addHabit:'習慣を追加', editHabit:'習慣を編集',
+    todayProgress:'今日の進捗', of:'/', habits2:'個',
+    totalHabits:'習慣の総数', completed:'今日の完了数',
+    longestStreak:'最長連続記録', currentStreak:'最高連続記録',
+    noHabits:'まだ習慣がありません', addYourFirst:'最初の習慣を追加',
+    noHabitsDesc:'最初の習慣を追加して、毎日の勝利を記録しましょう！',
+    habitName:'習慣の名前', placeholder:'例: 朝のランニング、瞑想…',
+    category:'カテゴリ', save:'保存する', cancel:'キャンセル',
+    edit:'編集', delete:'削除', allDone:'今日の習慣がすべて完了！',
+    Fitness:'フィットネス', Mindfulness:'マインドフルネス',
+    Learning:'学習', Productivity:'生産性',
+    streak:'連続', best:'最高', days:'日',
+    Mon:'月',Tue:'火',Wed:'水',Thu:'木',Fri:'金',Sat:'土',Sun:'日',
+  },
+};
+
+const CATEGORIES = ['Fitness','Mindfulness','Learning','Productivity'];
+const DAY_KEYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+/* ── Helpers ── */
+function todayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function dateStr(d) {
+  const x = new Date(d);
+  return x.toISOString().split('T')[0];
+}
+
+function addDays(dateIso, n) {
+  const d = new Date(dateIso);
+  d.setDate(d.getDate() + n);
+  return dateStr(d);
+}
+
+function last7() {
+  return Array.from({ length: 7 }, (_, i) => addDays(todayStr(), i - 6));
+}
+
+function calcStreaks(completedDates) {
+  if (!completedDates || completedDates.length === 0) return { current: 0, longest: 0 };
+
+  const set  = new Set(completedDates);
+  const desc = [...set].sort().reverse();
+  const today     = todayStr();
+  const yesterday = addDays(today, -1);
+
+  let current = 0;
+  if (set.has(today) || set.has(yesterday)) {
+    let check = set.has(today) ? today : yesterday;
+    while (set.has(check)) {
+      current++;
+      check = addDays(check, -1);
+    }
+  }
+
+  const asc = [...set].sort();
+  let longest = 1, run = 1;
+  for (let i = 1; i < asc.length; i++) {
+    if (addDays(asc[i-1], 1) === asc[i]) { run++; longest = Math.max(longest, run); }
+    else run = 1;
+  }
+
+  return { current, longest };
+}
+
+function load(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+  catch { return fallback; }
+}
+
+/* ── Icons ── */
+const Ico = {
+  check: <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>,
+  edit:  <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+  trash: <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>,
+  grid:  <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
+  list:  <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>,
+  plus:  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+};
+
+/* ── HabitForm ── */
+function HabitForm({ habit, onSave, onClose, t }) {
+  const [name, setName] = useState(habit?.name ?? '');
+  const [cat,  setCat]  = useState(habit?.category ?? 'Fitness');
+
+  function submit(e) {
+    e.preventDefault();
+    if (!name.trim()) return;
+    onSave({ name: name.trim(), category: cat });
+  }
+
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="sheet" onClick={e => e.stopPropagation()}>
+        <div className="sheet-handle"/>
+        <div className="sheet-title">{habit ? t.editHabit : t.addHabit}</div>
+        <form onSubmit={submit}>
+          <div className="form-group">
+            <label className="form-label">{t.habitName}</label>
+            <input
+              className="form-input"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder={t.placeholder}
+              maxLength={60}
+              autoFocus
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">{t.category}</label>
+            <div className="cat-grid">
+              {CATEGORIES.map(c => (
+                <button
+                  key={c}
+                  type="button"
+                  className={`cat-option ${cat === c ? 'sel' : ''}`}
+                  onClick={() => setCat(c)}
+                >
+                  {t[c]}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="form-actions">
+            <button type="button" className="btn-cancel" onClick={onClose}>{t.cancel}</button>
+            <button type="submit"  className="btn-save"  disabled={!name.trim()}>{t.save}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/* ── HabitCard ── */
+function HabitCard({ habit, onToggle, onEdit, onDelete, t }) {
+  const today   = todayStr();
+  const done    = habit.completedDates.includes(today);
+  const { current, longest } = calcStreaks(habit.completedDates);
+  const hot     = current >= 2;
+  const days    = last7();
+  const dayNow  = new Date().getDay(); // 0=Sun
+
+  return (
+    <div className={`habit-card ${done ? 'done' : ''}`}>
+      <div className="habit-card-top">
+        <button className={`check-btn ${done ? 'done' : ''}`} onClick={() => onToggle(habit.id)}>
+          {Ico.check}
+        </button>
+        <div className="habit-info">
+          <div className={`habit-name ${done ? 'done' : ''}`}>{habit.name}</div>
+          <div className="habit-meta">
+            <span className={`cat-badge cat-${habit.category}`}>{t[habit.category]}</span>
+          </div>
+        </div>
+        <div className="habit-actions">
+          <button className="icon-btn" onClick={() => onEdit(habit)} title={t.edit}>{Ico.edit}</button>
+          <button className="icon-btn del" onClick={() => onDelete(habit.id)} title={t.delete}>{Ico.trash}</button>
+        </div>
+      </div>
+
+      {/* 7-day mini calendar */}
+      <div className="week-dots">
+        {days.map((d, i) => {
+          const dayIdx = (dayNow - 6 + i + 7) % 7;
+          const filled = habit.completedDates.includes(d);
+          const isToday = d === today;
+          return (
+            <div className="dot-wrap" key={d}>
+              <div className={`dot ${filled ? (isToday ? 'today-filled' : 'filled') : ''}`}/>
+              <span className="dot-day">{t[DAY_KEYS[dayIdx]]}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Streak pills */}
+      {(current > 0 || longest > 0) && (
+        <div className="streak-row">
+          {current > 0 && (
+            <span className={`streak-pill ${hot ? 'hot' : ''}`}>
+              {hot ? '🔥' : '✓'} {current} {t.streak}
+            </span>
+          )}
+          {longest > 1 && (
+            <span className="streak-pill">🏆 {longest} {t.best}</span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Dashboard ── */
+function Dashboard({ habits, onToggle, t }) {
+  const today    = todayStr();
+  const total    = habits.length;
+  const done     = habits.filter(h => h.completedDates.includes(today)).length;
+  const pct      = total > 0 ? Math.round((done / total) * 100) : 0;
+  const streaks  = habits.map(h => calcStreaks(h.completedDates));
+  const maxCur   = streaks.length ? Math.max(...streaks.map(s => s.current)) : 0;
+  const maxLong  = streaks.length ? Math.max(...streaks.map(s => s.longest)) : 0;
+  const dateLabel = new Date().toLocaleDateString(undefined, { weekday:'long', month:'short', day:'numeric' });
+
+  return (
+    <div>
+      <div className="view-header">
+        <div className="view-title">{t.dashboard}</div>
+        <div className="badge-pill">{dateLabel}</div>
+      </div>
+
+      {/* Progress hero card */}
+      <div className="progress-card">
+        <div className="progress-top">
+          <div>
+            <div className="progress-label">{t.todayProgress}</div>
+            <div className="progress-pct">{pct}%</div>
+            <div className="progress-sub">
+              {done} {t.of} {total} {t.habits2}
+            </div>
+          </div>
+          <div className="progress-emoji">
+            {pct === 100 ? '🎉' : pct >= 50 ? '💪' : '🌱'}
+          </div>
+        </div>
+        <div className="progress-track">
+          <div className="progress-fill" style={{ width: `${Math.max(pct, total === 0 ? 0 : 2)}%` }}/>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="stats-grid">
+        <div className="stat-card">
+          <div className="stat-icon">📋</div>
+          <div className="stat-val">{total}</div>
+          <div className="stat-lbl">{t.totalHabits}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon">✅</div>
+          <div className="stat-val">{done}</div>
+          <div className="stat-lbl">{t.completed}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon">🔥</div>
+          <div className="stat-val">{maxCur}</div>
+          <div className="stat-lbl">{t.currentStreak}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon">🏆</div>
+          <div className="stat-val">{maxLong}</div>
+          <div className="stat-lbl">{t.longestStreak}</div>
+        </div>
+      </div>
+
+      {/* Quick check-in list */}
+      {habits.length > 0 && (
+        <>
+          <div className="section-label">{t.todayProgress}</div>
+          {habits.map(h => {
+            const isDone = h.completedDates.includes(today);
+            const { current } = calcStreaks(h.completedDates);
+            return (
+              <div
+                key={h.id}
+                className={`quick-row ${isDone ? 'done' : ''}`}
+                onClick={() => onToggle(h.id)}
+              >
+                <div className={`quick-check ${isDone ? 'done' : ''}`}>
+                  {isDone ? '✓' : ''}
+                </div>
+                <span className={`quick-name ${isDone ? 'done' : ''}`}>{h.name}</span>
+                <span className={`cat-badge cat-${h.category}`}>{t[h.category]}</span>
+                {current >= 2 && <span className="quick-streak">🔥{current}</span>}
+              </div>
+            );
+          })}
+        </>
+      )}
+
+      {habits.length === 0 && (
+        <div style={{ textAlign:'center', padding:'40px 0', color:'var(--text-muted)', fontSize:'14px' }}>
+          {t.noHabitsDesc}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Habits View ── */
+function HabitsView({ habits, onToggle, onEdit, onDelete, onAdd, t }) {
+  const today = todayStr();
+  const done  = habits.filter(h => h.completedDates.includes(today)).length;
+  const pct   = habits.length > 0 ? Math.round((done / habits.length) * 100) : 0;
+
+  if (habits.length === 0) {
+    return (
+      <div className="empty-state">
+        <div className="empty-icon">🌟</div>
+        <div className="empty-title">{t.noHabits}</div>
+        <div className="empty-desc">{t.noHabitsDesc}</div>
+        <button className="btn-primary" onClick={onAdd}>{t.addYourFirst}</button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="view-header">
+        <div className="view-title">{t.habits}</div>
+        <div className="badge-pill">{done}/{habits.length}</div>
+      </div>
+
+      {pct === 100 && (
+        <div className="all-done-banner">🎉 {t.allDone}</div>
+      )}
+
+      {habits.map(h => (
+        <HabitCard
+          key={h.id}
+          habit={h}
+          onToggle={onToggle}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          t={t}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ── ToastContainer ── */
+function ToastContainer({ toasts }) {
+  return (
+    <div className="toast-container">
+      {toasts.map(t => (
+        <div key={t.id} className="toast">
+          {t.loading
+            ? <div className="toast-spinner"/>
+            : <span className="toast-icon">✨</span>}
+          <span>{t.loading ? 'Getting your motivation…' : t.message}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── App ── */
+function App() {
+  const [habits,  setHabits]  = useState(() => load('dw_habits', []));
+  const [lang,    setLang]    = useState(() => load('dw_lang', 'en'));
+  const [view,    setView]    = useState('dashboard');
+  const [form,    setForm]    = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [toasts,  setToasts]  = useState([]);
+
+  const t = T[lang] || T.en;
+
+  useEffect(() => {
+    localStorage.setItem('dw_habits', JSON.stringify(habits));
+  }, [habits]);
+
+  function changeLang(l) {
+    setLang(l);
+    localStorage.setItem('dw_lang', JSON.stringify(l));
+  }
+
+  function toggle(id) {
+    const day   = todayStr();
+    const habit = habits.find(h => h.id === id);
+    if (!habit) return;
+    const completing = !habit.completedDates.includes(day);
+
+    setHabits(prev => prev.map(h => {
+      if (h.id !== id) return h;
+      return { ...h, completedDates: completing
+        ? [...h.completedDates, day]
+        : h.completedDates.filter(d => d !== day) };
+    }));
+
+    if (completing) {
+      const newStreak = calcStreaks([...habit.completedDates, day]).current;
+      fetchMotivation(habit.name, newStreak, habit.category);
+    }
+  }
+
+  function addToast(msg, loading = false) {
+    const id = Date.now().toString(36) + Math.random().toString(36).slice(2);
+    setToasts(prev => [...prev, { id, message: msg, loading }]);
+    return id;
+  }
+
+  function resolveToast(id, msg) {
+    setToasts(prev => prev.map(t => t.id === id ? { ...t, message: msg, loading: false } : t));
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 5000);
+  }
+
+  async function fetchMotivation(habitName, streak, category) {
+    const id = addToast('', true);
+    try {
+      const res = await fetch('http://localhost:3001/api/motivate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ habitName, streak, category }),
+      });
+      if (!res.ok) throw new Error();
+      const { message } = await res.json();
+      resolveToast(id, message);
+    } catch {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }
+  }
+
+  function openAdd()    { setEditing(null); setForm(true); }
+  function openEdit(h)  { setEditing(h);    setForm(true); }
+
+  function deleteHabit(id) {
+    if (!window.confirm(t.delete + '?')) return;
+    setHabits(prev => prev.filter(h => h.id !== id));
+  }
+
+  function saveHabit({ name, category }) {
+    if (editing) {
+      setHabits(prev => prev.map(h => h.id === editing.id ? { ...h, name, category } : h));
+    } else {
+      setHabits(prev => [...prev, {
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+        name, category,
+        completedDates: [],
+        createdAt: new Date().toISOString(),
+      }]);
+    }
+    setForm(false);
+    setEditing(null);
+  }
+
+  const LANGS = [
+    { code:'en', label:'EN' },
+    { code:'es', label:'ES' },
+    { code:'fr', label:'FR' },
+    { code:'ja', label:'JA' },
+  ];
+
+  return (
+    <div className="app">
+      {/* Header */}
+      <header className="header">
+        <div className="header-brand">
+          <div className="brand-icon">🏆</div>
+          <span className="brand-name">{t.appName}</span>
+        </div>
+        <div className="lang-toggle">
+          {LANGS.map(({ code, label }) => (
+            <button
+              key={code}
+              className={`lang-btn ${lang === code ? 'active' : ''}`}
+              onClick={() => changeLang(code)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </header>
+
+      {/* Main */}
+      <main className="main">
+        {view === 'dashboard'
+          ? <Dashboard habits={habits} onToggle={toggle} t={t}/>
+          : <HabitsView habits={habits} onToggle={toggle} onEdit={openEdit} onDelete={deleteHabit} onAdd={openAdd} t={t}/>
+        }
+      </main>
+
+      {/* Bottom Nav */}
+      <nav className="bottom-nav">
+        <button
+          className={`nav-tab ${view === 'dashboard' ? 'active' : ''}`}
+          onClick={() => setView('dashboard')}
+        >
+          {Ico.grid}
+          <span className="nav-label">{t.dashboard}</span>
+        </button>
+
+        <button className="nav-fab" onClick={openAdd} aria-label={t.addHabit}>
+          {Ico.plus}
+        </button>
+
+        <button
+          className={`nav-tab ${view === 'habits' ? 'active' : ''}`}
+          onClick={() => setView('habits')}
+        >
+          {Ico.list}
+          <span className="nav-label">{t.habits}</span>
+        </button>
+      </nav>
+
+      {/* Form sheet */}
+      {form && (
+        <HabitForm
+          habit={editing}
+          onSave={saveHabit}
+          onClose={() => { setForm(false); setEditing(null); }}
+          t={t}
+        />
+      )}
+
+      {/* AI motivation toasts */}
+      <ToastContainer toasts={toasts}/>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
